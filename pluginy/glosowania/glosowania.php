@@ -276,7 +276,7 @@ function glosowania_shortcode($atrybuty) {
 		wyswietl_glosowanie($id_glosowania);
 		return;
 	}
-    $tab = shortcode_atts(array('id' => 0), $arybuty);
+    $tab = shortcode_atts(array('id' => 0), $atrybuty);
 	if ($tab['id'] == 0) {
 		$glosowania = $wpdb -> get_results("SELECT * FROM Glosowanie ORDER BY dataDodania DESC;");
 		echo '<table><tr><th>Głosowanie</th><th>Stan</th><th>Głos</th></tr>';
