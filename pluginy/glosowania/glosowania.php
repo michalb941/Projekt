@@ -6,9 +6,9 @@
  * Author: Michał Błaziak
 */
 
-add_action( 'init', 'install_plugin' );
-add_action( 'admin_menu', 'dodaj_menu' );
-add_shortcode( 'glosowania', 'glosowania_shortcode' );
+add_action('init', 'install_plugin');
+add_action('admin_menu', 'dodaj_menu');
+add_shortcode('glosowania', 'glosowania_shortcode');
 
 include 'tabele.php';
 
@@ -35,7 +35,7 @@ function rodzaj_glosowania($id_glosowania) {
 /** Wyświetla pytanie w głosowaniu id_glosowania. */
 function pytanie($id_glosowania) {
 	global $wpdb;
-	$glosowanie = $wpdb -> get_row($wpdb -> prepare("SELECT pytanie FROM Glosowanie WHERE idGlosowania = %d;", (int) $id_glosowania));
+	$glosowanie = $wpdb -> get_row($wpdb -> prepare("SELECT pytanie FROM Glosowanie WHERE idGlosowania = %d;", $id_glosowania));
 	echo '<h4>'.$glosowanie -> pytanie.'</h4>';
 }
 
@@ -43,7 +43,7 @@ function pytanie($id_glosowania) {
 function liczba_glosow($id_glosowania) {
 	global $wpdb;
 	echo 'Liczba głosów: ';
-	$liczba_glosow = $wpdb -> query($wpdb -> prepare("SELECT idGlosu FROM Glos WHERE idGlosowania = %d;", (int)$id_glosowania));
+	$liczba_glosow = $wpdb -> query($wpdb -> prepare("SELECT idGlosu FROM Glos WHERE idGlosowania = %d;", $id_glosowania));
 	echo '<b>'.$liczba_glosow.'</b>';
 	return $liczba_glosow;
 }
@@ -52,8 +52,8 @@ function liczba_glosow($id_glosowania) {
 function wyniki_opcje($id_glosowania) {
 	global $wpdb;
 	if (isset($_GET['usun_glos'])) {
-		$wpdb -> query($wpdb -> prepare("DELETE FROM GlosNaOpcje WHERE idGlosu = %d;", (int)$_GET['usun_glos']));
-		$wpdb -> query($wpdb -> prepare("DELETE FROM Glos WHERE idGlosu = %d;", (int)$_GET['usun_glos']));
+		$wpdb -> query($wpdb -> prepare("DELETE FROM GlosNaOpcje WHERE idGlosu = %d;", $_GET['usun_glos']));
+		$wpdb -> query($wpdb -> prepare("DELETE FROM Glos WHERE idGlosu = %d;", $_GET['usun_glos']));
 	}
 	pytanie($id_glosowania);
 	$ile_glosow = liczba_glosow($id_glosowania);
@@ -68,8 +68,8 @@ function wyniki_opcje($id_glosowania) {
 function wyniki_polubienie($id_glosowania) {
 	global $wpdb;
 	if (isset($_GET['usun_glos'])) {
-		$wpdb -> query($wpdb -> prepare("DELETE FROM GlosLogiczny WHERE idGlosu = %d;", (int)$_GET['usun_glos']));
-		$wpdb -> query($wpdb -> prepare("DELETE FROM Glos WHERE idGlosu = %d;", (int)$_GET['usun_glos']));
+		$wpdb -> query($wpdb -> prepare("DELETE FROM GlosLogiczny WHERE idGlosu = %d;", $_GET['usun_glos']));
+		$wpdb -> query($wpdb -> prepare("DELETE FROM Glos WHERE idGlosu = %d;", $_GET['usun_glos']));
 	}
 	pytanie($id_glosowania);
 	$ile_glosow = liczba_glosow($id_glosowania);
@@ -85,8 +85,8 @@ function wyniki_polubienie($id_glosowania) {
 function wyniki_wartosc($id_glosowania) {
 	global $wpdb;
 	if (isset($_GET['usun_glos'])) {
-		$wpdb -> query($wpdb -> prepare("DELETE FROM GlosZWartoscia WHERE idGlosu = %d;", (int)$_GET['usun_glos']));
-		$wpdb -> query($wpdb -> prepare("DELETE FROM Glos WHERE idGlosu = %d;", (int)$_GET['usun_glos']));
+		$wpdb -> query($wpdb -> prepare("DELETE FROM GlosZWartoscia WHERE idGlosu = %d;", $_GET['usun_glos']));
+		$wpdb -> query($wpdb -> prepare("DELETE FROM Glos WHERE idGlosu = %d;", $_GET['usun_glos']));
 	}
 	pytanie($id_glosowania);
 	$ile_glosow = liczba_glosow($id_glosowania);
@@ -170,8 +170,8 @@ function zaglosuj_opcje($id_glosowania) {
 function zaglosuj_polubienie($id_glosowania) {
 	global $wpdb;
 	if (isset($_POST['zaglosuj'])) {
-		$wpdb -> query($wpdb -> prepare("INSERT INTO Glos (idGlosowania, idUzytkownika) VALUES (%d, %d);", $id_glosowania, $uzytkownik()));
-		$glos = $wpdb -> get_row($wpdb -> prepare("SELECT idGlosu FROM Glos WHERE idGlosowania = %d AND idUzytkownika = %d;", $id_glosowania, $uzytkownik()));
+		$wpdb -> query($wpdb -> prepare("INSERT INTO Glos (idGlosowania, idUzytkownika) VALUES (%d, %d);", $id_glosowania, uzytkownik()));
+		$glos = $wpdb -> get_row($wpdb -> prepare("SELECT idGlosu FROM Glos WHERE idGlosowania = %d AND idUzytkownika = %d;", $id_glosowania, uzytkownik()));
 		$wpdb -> query($wpdb -> prepare("INSERT INTO GlosLogiczny (idGlosu, polubienie) VALUES (%d, %s);", $glos -> idGlosu, $_POST['glos']));
 	} else {
 		echo '<form action = "'.get_permalink().'&glosowanie='.$id_glosowania.'" method = "post">
@@ -377,7 +377,7 @@ function generuj_raport() {
 	echo '<h3>Raport</h3><br>';
 	$glosowania = $wpdb -> get_results("SELECT idGlosowania, pytanie FROM Glosowanie;");
 	foreach ($glosowania as $glosowanie)
-		if (isset($_POST[($glosowanie -> idGlosowania).""]) || isset($_POST["raport_wszystkie"])) {
+		if (isset($_POST[($glosowanie -> idGlosowania)]) || isset($_POST["raport_wszystkie"])) {
 			$rodzaj = rodzaj_glosowania($glosowanie -> idGlosowania);
 			if ($rodzaj == "lista opcji")
 				wyniki_opcje($glosowanie -> idGlosowania);
@@ -392,7 +392,7 @@ function generuj_raport() {
 	echo '<form action = "'.$link.'" method = "post">';
 	$nr = 0;
 	foreach ($glosowania as $glosowanie)
-		if (isset($_POST[($glosowanie -> idGlosowania).""]) || isset($_POST["raport_wszystkie"])) {
+		if (isset($_POST[($glosowanie -> idGlosowania)]) || isset($_POST["raport_wszystkie"])) {
 			$rodzaj = rodzaj_glosowania($glosowanie -> idGlosowania);
 			$ile_glosow = $wpdb -> query($wpdb -> prepare("SELECT idGlosu FROM Glos WHERE idGlosowania = %d;", $glosowanie -> idGlosowania));
 			echo '<input type="hidden" name="'.$nr.'" value = "'.$rodzaj.'" />';
@@ -442,7 +442,7 @@ function glosowania() {
 	}
 	if (isset($_GET['pokaz_glosy'])) {
 		$rodzaj = rodzaj_glosowania($_GET['pokaz_glosy']);
-		wyswietl_wyniki_glosowania((int)$_GET['pokaz_glosy']);
+		wyswietl_wyniki_glosowania($_GET['pokaz_glosy']);
 		echo '<h3>Głosy</h3>';
 		if ($rodzaj == "lista opcji")
 			pokaz_glosy_opcje($_GET['pokaz_glosy']);
@@ -490,12 +490,12 @@ function zapisz_glosowanie() {
 	$sql = 
 		"INSERT INTO Glosowanie 
 		(dataDodania, dataWygasniecia, czyWynikiWTrakcieGlosowania, grupaUprawnionychDoGlosowania, pytanie)
-		VALUES (NOW(), '".$data."', '".$_POST['4']."', ".(int)$_POST['2'].", '".$_POST['1']."');";
+		VALUES (NOW(), '".$data."', '".$_POST['4']."', ".$_POST['2'].", '".$_POST['1']."');";
 	$wpdb -> query($sql);
 	$ret = $wpdb -> get_row("SELECT MAX(idGlosowania) AS wynik FROM Glosowanie");
 	if ($_POST['3'] == "0") {
 		$wpdb -> query($wpdb -> prepare("INSERT INTO GlosowanieListaOpcji VALUES(%d, %s);", ($ret -> wynik), $_POST['11']));
-		for ($i = 0; $i < (int)$_POST['10']; ++$i)
+		for ($i = 0; $i < $_POST['10']; ++$i)
 			$wpdb -> query($wpdb -> prepare("INSERT INTO Opcja (tresc, idGlosowania) VALUES(%s, %d);", $_POST[(100 + $i).""], $ret -> wynik));
 	} else if ($_POST['3'] == "1")
 		$wpdb -> query("INSERT INTO GlosowaniePolubienie VALUES(".($ret -> wynik).");");
@@ -503,7 +503,7 @@ function zapisz_glosowanie() {
 		if ($_POST['12'] == "gwiazdki")
 			$wpdb -> query($wpdb -> prepare("INSERT INTO GlosowanieZWartoscia (idGlosowania, prezentacja) VALUES(%d, %s);", $ret -> wynik, $_POST['12']));
 		else
-			$wpdb -> query($wpdb -> prepare("INSERT INTO GlosowanieZWartoscia VALUES(%d, %s, %d);", $ret -> wynik, $_POST['12'], (int)$_POST['13']));
+			$wpdb -> query($wpdb -> prepare("INSERT INTO GlosowanieZWartoscia VALUES(%d, %s, %d);", $ret -> wynik, $_POST['12'], $_POST['13']));
 	}
 	for ($i = 0; $i <= $_POST["ile_grup"]; ++$i)
 		if (isset($_POST["grupa".$i]))
